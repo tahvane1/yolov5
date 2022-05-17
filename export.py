@@ -130,6 +130,7 @@ def export_onnx(model, im, file, opset, train, dynamic, simplify, prefix=colorst
             dynamic_axes={
                 'images': {
                     0: 'batch',
+                    1: 'channel',
                     2: 'height',
                     3: 'width'},  # shape(1,3,640,640)
                 'output': {

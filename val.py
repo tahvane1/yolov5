@@ -121,6 +121,7 @@ def run(
         plots=True,
         callbacks=Callbacks(),
         compute_loss=None,
+        channels=3
 ):
     # Initialize/load model and set device
     training = model is not None
@@ -146,7 +147,7 @@ def run(
             device = model.device
             if not (pt or jit):
                 batch_size = 1  # export.py models default to batch-size 1
-                LOGGER.info(f'Forcing --batch-size 1 square inference (1,3,{imgsz},{imgsz}) for non-PyTorch models')
+                LOGGER.info(f'Forcing --batch-size 1 square inference (1,{channels},{imgsz},{imgsz}) for non-PyTorch models')
 
         # Data
         data = check_dataset(data)  # check
@@ -177,7 +178,8 @@ def run(
                                        pad=pad,
                                        rect=rect,
                                        workers=workers,
-                                       prefix=colorstr(f'{task}: '))[0]
+                                       prefix=colorstr(f'{task}: '),
+                                       channels=channels)[0]
 
     seen = 0
     confusion_matrix = ConfusionMatrix(nc=nc)
@@ -349,6 +351,8 @@ def parse_opt():
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--half', action='store_true', help='use FP16 half-precision inference')
     parser.add_argument('--dnn', action='store_true', help='use OpenCV DNN for ONNX inference')
+    parser.add_argument('--channels', default=3, type=int,  help='channels')
+  
     opt = parser.parse_args()
     opt.data = check_yaml(opt.data)  # check YAML
     opt.save_json |= opt.data.endswith('coco.yaml')
