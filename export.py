@@ -171,7 +171,7 @@ def export_onnx(model, im, file, opset, train, dynamic, simplify, prefix=colorst
 def export_openvino(model, im, file, half, prefix=colorstr('OpenVINO:')):
     # YOLOv5 OpenVINO export
     try:
-        check_requirements(('openvino-dev',))  # requires openvino-dev: https://pypi.org/project/openvino-dev/
+        #check_requirements(('openvino-dev',))  # requires openvino-dev: https://pypi.org/project/openvino-dev/
         import openvino.inference_engine as ie
 
         LOGGER.info(f'\n{prefix} starting export with openvino {ie.__version__}...')
@@ -468,6 +468,7 @@ def run(
         topk_all=100,  # TF.js NMS: topk for all classes to keep
         iou_thres=0.45,  # TF.js NMS: IoU threshold
         conf_thres=0.25,  # TF.js NMS: confidence threshold
+        channels=3
 ):
     t = time.time()
     include = [x.lower() for x in include]  # to lowercase
@@ -492,8 +493,7 @@ def run(
     # Input
     gs = int(max(model.stride))  # grid size (max stride)
     imgsz = [check_img_size(x, gs) for x in imgsz]  # verify img_size are gs-multiples
-    # ! CHANGE THIS
-    im = torch.zeros(batch_size, 3, *imgsz).to(device)  # image size(1,3,320,192) BCHW iDetection
+    im = torch.zeros(batch_size, channels, *imgsz).to(device)  # image size(1,3,320,192) BCHW iDetection
 
     # Update model
     if half and not (coreml or xml):
@@ -587,6 +587,8 @@ def parse_opt():
                         nargs='+',
                         default=['torchscript', 'onnx'],
                         help='torchscript, onnx, openvino, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs')
+    parser.add_argument('--channels', default=3, type=int,  help='channels')
+  
     opt = parser.parse_args()
     print_args(vars(opt))
     return opt
